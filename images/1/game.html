@@ -1,0 +1,440 @@
+<html>
+<body>
+<script src="jquery-1.10.1.min.js"></script>
+<script src="jquery.easing.1.3.js"></script>
+
+<style>
+.piece {
+	position:absolute;
+/*	border:2px solid gray; */
+}
+#picture {
+	position:absolute;
+	left:10px;
+	top:10px;
+	display:block;
+/*	border:1px solid gray; */
+}
+body {
+	border:0px;
+	margin:0px;
+	background-color:#444;
+}
+.pieceBorderTop {
+	position:absolute;
+	background: -moz-linear-gradient(top, rgba(255,255,255,1) 0%, rgba(255,255,255,0) 40%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(255,255,255,1)), color-stop(40%,rgba(255,255,255,0))); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top, rgba(255,255,255,1) 0%,rgba(255,255,255,0) 40%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(top, rgba(255,255,255,1) 0%,rgba(255,255,255,0) 40%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(top, rgba(255,255,255,1) 0%,rgba(255,255,255,0) 40%); /* IE10+ */
+	background: linear-gradient(to bottom, rgba(255,255,255,1) 0%,rgba(255,255,255,0) 40%); /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#00ffffff',GradientType=0 ); /* IE6-9 */
+}
+.pieceBorderLeft {
+	position:absolute;
+	background: -moz-linear-gradient(left,  rgba(255,255,255,1) 0%, rgba(255,255,255,0) 40%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, right top, color-stop(0%,rgba(255,255,255,1)), color-stop(40%,rgba(255,255,255,0))); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(left,  rgba(255,255,255,1) 0%,rgba(255,255,255,0) 40%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(left,  rgba(255,255,255,1) 0%,rgba(255,255,255,0) 40%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(left,  rgba(255,255,255,1) 0%,rgba(255,255,255,0) 40%); /* IE10+ */
+	background: linear-gradient(to right,  rgba(255,255,255,1) 0%,rgba(255,255,255,0) 40%); /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#00ffffff',GradientType=1 ); /* IE6-9 */
+}
+.pieceBorderBottom {
+	position:absolute;
+	background: -moz-linear-gradient(top,  rgba(0,0,0,0) 60%, rgba(0,0,0,1) 100%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, left bottom, color-stop(60%,rgba(0,0,0,0)), color-stop(100%,rgba(0,0,0,1))); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(top,  rgba(0,0,0,0) 60%,rgba(0,0,0,1) 100%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(top,  rgba(0,0,0,0) 60%,rgba(0,0,0,1) 100%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(top,  rgba(0,0,0,0) 60%,rgba(0,0,0,1) 100%); /* IE10+ */
+	background: linear-gradient(to bottom,  rgba(0,0,0,0) 60%,rgba(0,0,0,1) 100%); /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00000000', endColorstr='#000000',GradientType=0 ); /* IE6-9 */
+}
+.pieceBorderRight {
+	position:absolute;
+	background: -moz-linear-gradient(left,  rgba(0,0,0,0) 60%, rgba(0,0,0,1) 100%); /* FF3.6+ */
+	background: -webkit-gradient(linear, left top, right top, color-stop(60%,rgba(0,0,0,0)), color-stop(100%,rgba(0,0,0,1))); /* Chrome,Safari4+ */
+	background: -webkit-linear-gradient(left,  rgba(0,0,0,0) 60%,rgba(0,0,0,1) 100%); /* Chrome10+,Safari5.1+ */
+	background: -o-linear-gradient(left,  rgba(0,0,0,0) 60%,rgba(0,0,0,1) 100%); /* Opera 11.10+ */
+	background: -ms-linear-gradient(left,  rgba(0,0,0,0) 60%,rgba(0,0,0,1) 100%); /* IE10+ */
+	background: linear-gradient(to right,  rgba(0,0,0,0) 60%,rgba(0,0,0,1) 100%); /* W3C */
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00000000', endColorstr='#000000',GradientType=1 ); /* IE6-9 */
+}
+.selectedCover {
+	position:absolute;
+	background-color:white;
+	opacity:.30;
+	-moz-opacity:.30; 
+	filter:alpha(opacity=30); 
+	top:0px;
+	left:0px;
+}
+
+
+
+</style>
+
+<div id="picture"></div>
+
+<script>
+
+function Piece(filename, places, left, top, width, height) {
+	var theThis = this;
+	var div = null;
+	var img = null;
+	var css = null;
+	var atIndex = -1;
+	var runWhenLoaded = null;
+	var loaded = false;
+	var mouseDownFunction = null;
+	var mouseMoveFunction = null;
+	var selectionCover = null;
+	
+	
+	this.inRightPlace = function() {
+		return places[atIndex].filename == filename;
+	}
+	
+	function scale(number) {
+		return parseInt(number/4);
+	}
+	
+	this.getIndex = function() {
+		return atIndex;
+	}
+	
+	this.onMouseDown = function(func) {
+		mouseDownFunction = func;
+	}
+	this.onMouseMove = function(func) {
+		mouseMoveFunction = func;
+	}
+	function init() {
+		css = {
+			left:scale(left)+"px", 
+			top:scale(top)+"px",
+			height:scale(height)+"px",
+			width:scale(width)+"px"
+		}
+		div = $("<div>").addClass("piece").css(css);
+		div.css({"z-index":"1"});
+		img = $("<img>").attr("src", filename).css({width:"100%", height:"100%"});
+		selectionCover = $("<div>").addClass("selectedCover").css({width:"100%", height:"100%"}).hide();
+		img.on('dragstart', function(event) { 
+			event.preventDefault(); 
+		});
+		img.on("mousedown", function(event) {
+			if (mouseDownFunction != null) mouseDownFunction(event, theThis);
+		});
+		img.on("mousemove", function(event) {
+			if (mouseMoveFunction != null) mouseMoveFunction(event, theThis);
+		});
+		selectionCover.on("mousedown", function(event) {
+			if (mouseDownFunction != null) mouseDownFunction(event, theThis);
+		});
+
+		div.append(img);
+		div.append(selectionCover);
+		img.load(function() {
+			addBorder();
+			if (runWhenLoaded != null) {
+				setTimeout(runWhenLoaded, 450);
+			}
+			loaded = true;
+		});
+	}
+	
+	this.addSelection = function(andBulge) {
+		selectionCover.show();
+		var bigger = 6;
+		div.css({"z-index":"2"});
+		if (andBulge) {
+			div.css({"z-index":"3"});
+			div.animate({
+				left:parseInt(div.css("left"))-bigger + "px",
+				top:parseInt(div.css("top"))-bigger + "px",
+				width:parseInt(div.css("width"))+2*bigger + "px",
+				height:parseInt(div.css("height"))+2*bigger + "px"
+			});
+		}
+	}
+	
+	this.removeSelection = function() {
+		div.css({"z-index":"1"});
+		selectionCover.hide();
+		div.animate({
+			left:scale(places[atIndex].left)+"px", 
+			top:scale(places[atIndex].top)+"px",
+			width:scale(places[atIndex].width)+"px",
+			height:scale(places[atIndex].height)+"px"
+		}, 200, function() {
+			
+		});
+	}
+	
+	this.getDiv = function() {
+		return div;
+	}
+	
+	function addBorder() {
+		var size = "4px";
+		var sizepx = 4;
+		div.append($("<div>").addClass("pieceBorderTop").css({width:"100%", height:size, top:0, left:0}));
+		div.append($("<div>").addClass("pieceBorderBottom").css({width:"100%", height:size, bottom:0, left:0}));
+		div.append($("<div>").addClass("pieceBorderLeft").css({width:size, height:"100%", top:0, left:0}));
+		div.append($("<div>").addClass("pieceBorderRight").css({width:size, height:"100%", top:0, right:0}));
+	}
+	
+	this.initialSlideTo = function(placeIndex) {
+		function animate() {
+			div.animate({
+				left:scale(places[placeIndex].left)+"px", 
+				top:scale(places[placeIndex].top)+"px",
+				width:scale(places[placeIndex].width)+"px",
+				height:scale(places[placeIndex].height)+"px"
+			}, 1000, "easeInOutBack");
+			atIndex = placeIndex;
+		}
+		
+		if (loaded) {
+			animate();
+		} else {
+			runWhenLoaded = function() {
+				animate();
+			}
+		}
+	
+	}
+	
+	this.slideTo = function(placeIndex, speed, runAfter) {
+		div.css("z-index", "4");
+		div.animate({
+			left:scale(places[placeIndex].left)+"px", 
+			top:scale(places[placeIndex].top)+"px",
+			width:scale(places[placeIndex].width)+"px",
+			height:scale(places[placeIndex].height)+"px"
+		}, speed, "easeInOutSine", function() {
+			if (runAfter != null) runAfter();
+			div.css("z-index", "1");
+		});
+		atIndex = placeIndex;
+	}
+	
+
+	init();
+}
+
+function Picture() {
+	var theThis = this;
+	var onPiece = null;
+	var dragging = false;
+	var firstPiece = null;
+	var lastPiece = null;
+	var singleTapMode = false;
+	var previousLastPiece = null;
+	
+	var places = [
+		{filename:"1.jpg", left:0, top:1248, width:1516, height:1089},
+		{filename:"2.jpg", left:0, top:456, width:1516, height:792},
+		{filename:"3.jpg", left:1516, top:456, width:756, height:604},
+		{filename:"4.jpg", left:1516, top:1060, width:756, height:1277},
+		{filename:"5.jpg", left:2272, top:1248, width:1284, height:1089},
+		{filename:"6.jpg", left:3556, top:1060, width:418, height:1277},
+		{filename:"7.jpg", left:2272, top:584, width:1284, height:664},
+		{filename:"8.jpg", left:3556, top:584, width:418, height:476},
+		{filename:"9.jpg", left:0, top:0, width:2272, height:456},
+		{filename:"10.jpg", left:2272, top:0, width:1702, height:584}
+	];
+	var pictureWidth = 3974;
+	var pictureHeight = 2337;
+	var pieces = [];
+	
+	this.init = function() {
+		var size = Math.min(pictureHeight, pictureWidth) / 4
+		var width = pictureWidth / 4;
+		var height = pictureHeight / 4;
+		var size = Math.min(width, height);
+		var left = pictureWidth / 2 - (size/2);
+		var top = pictureHeight / 2 - (size/2);
+		for(var i=0; i<places.length; i++) {
+			pieces[i] = new Piece(places[i].filename, places, left, top, size, size);
+		}
+		place();
+	}
+	
+
+	function makeRandomArray(size) {
+		var spots = [];
+		for(var i=0; i<size; i++) {
+			spots[i] = i;
+		}
+		for(var i=0; i<size; i++) {
+			var randomIndex = parseInt(Math.random()*size);
+			var temp = spots[i];
+			spots[i] = spots[randomIndex];
+			spots[randomIndex] = temp;
+		}
+		return spots;
+	}
+
+	function place() {
+		$("#picture").empty();
+		
+		for(var i=0; i<pieces.length; i++) {
+			$("#picture").append(pieces[i].getDiv());
+		}
+		var randomSpots = makeRandomArray(pieces.length);
+		for(var i=0; i<pieces.length; i++) {
+			pieces[i].initialSlideTo(randomSpots[i]);
+
+			pieces[i].onMouseDown(function(event, piece) {
+				mouseDown(piece, event);
+			});
+			pieces[i].onMouseMove(function(event, piece) { 
+				if (dragging) drag(piece, event);
+			});
+		}	
+
+		$("#picture").on("mouseup", function() {
+			if (dragging) doneDragging();
+			dragging = false;
+		});
+	}
+
+	function mouseDown(piece, event) {
+		if (singleTapMode) {
+			if (firstPiece == piece) {
+				// user tapped here again to unselect
+				unselect();
+				singleTapMode = false;
+				return;
+			} else {
+				swap(firstPiece, piece)
+				singleTapMode = false;
+				return;
+			}
+		}
+		singleTapMode = false;
+		previousLastPiece = null;
+
+		dragging = true;
+		onPiece = null;
+		piece.addSelection(true);
+		firstPiece = piece;
+		lastPiece = firstPiece;
+	}
+	
+	function unselect() {
+		if (firstPiece != null) firstPiece.removeSelection();
+		firstPiece = null;
+		lastPiece = null;
+	}
+
+	function doneDragging() {
+		if (firstPiece == lastPiece) {
+			// single tap mode
+			singleTapMode = true;
+			return;
+		}
+
+		swap(firstPiece, lastPiece)
+	}
+
+	function drag(piece, event) {
+		if (onPiece != piece) {
+			draggedOnto(piece);
+		}
+		
+		lastPiece = piece;
+		onPiece = piece;
+	}
+
+	function draggedOnto(piece) {
+		if (piece != firstPiece) {
+			lastPiece = piece;
+			piece.addSelection();
+			if (previousLastPiece != null) previousLastPiece.removeSelection();
+			previousLastPiece = piece;
+		} else {
+			if (previousLastPiece != null) previousLastPiece.removeSelection();
+			lastPiece = firstPiece;
+		}
+	}
+
+	function dragStart(img) {
+		addSelection(img);
+		img.addClass("dragStart");
+	}
+
+
+	function select(img) {
+		var theImage = img;
+		
+		// the user tapped another piece, so swap them
+		if ($(".selected").length > 0) {
+			swap(img, $(".selected"));
+			return;
+		}
+		
+		addSelection(img);
+	}
+
+
+	function swap(piece1, piece2) {
+		var index1 = piece1.getIndex();
+		var index2 = piece2.getIndex();
+		piece1.removeSelection();
+		piece2.removeSelection();
+		piece1.slideTo(index2, 500);
+		piece2.slideTo(index1, 500, function() {
+			checkWin();
+		});
+	}
+
+	function checkWin() {
+		var right = 0;
+		for(var i=0; i<pieces.length; i++) {
+			if (pieces[i].inRightPlace()) {
+				right++;
+			}
+		}
+		
+	
+		if (right == pieces.length) {
+		/*
+			for(var i=0; i<pieces.length; i++) {
+				if (pieces[i].inRightPlace()) {
+					right++;
+				}
+			}
+			*/
+			var borders = $(".pieceBorderTop, .pieceBorderBottom, .pieceBorderLeft, .pieceBorderRight");
+			borders.hide();
+			setTimeout(function() {
+				borders.show();
+				setTimeout(function() {
+					borders.fadeOut(1000);
+				}, 500);
+			}, 500);
+		}
+		
+	}
+
+
+
+}
+
+
+function Game() {
+	var picture = new Picture();
+	picture.init();
+}
+
+$(function() {
+	var game = new Game();
+});
+</script>
+
+
+</body>
+</html>
