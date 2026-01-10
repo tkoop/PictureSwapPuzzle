@@ -1,11 +1,9 @@
 <html>
   <body>
-    <script src="jquery-3.7.1.min.js"></script>
-    <script src="jquery.easing.1.4.2.js"></script>
-
     <style>
       .piece {
         position: absolute;
+        transition: all 0.2s ease-in-out;
         /*	border:2px solid gray; */
       }
       #picture {
@@ -39,6 +37,8 @@
         background: -ms-linear-gradient(top, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0) 40%); /* IE10+ */
         background: linear-gradient(to bottom, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0) 40%); /* W3C */
         filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#00ffffff',GradientType=0 ); /* IE6-9 */
+        opacity: 1;
+        transition: opacity 1s;
       }
       .pieceBorderLeft {
         position: absolute;
@@ -59,6 +59,8 @@
         background: -ms-linear-gradient(left, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0) 40%); /* IE10+ */
         background: linear-gradient(to right, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0) 40%); /* W3C */
         filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#00ffffff',GradientType=1 ); /* IE6-9 */
+        opacity: 1;
+        transition: opacity 1s;
       }
       .pieceBorderBottom {
         position: absolute;
@@ -79,6 +81,8 @@
         background: -ms-linear-gradient(top, rgba(0, 0, 0, 0) 60%, rgba(0, 0, 0, 1) 100%); /* IE10+ */
         background: linear-gradient(to bottom, rgba(0, 0, 0, 0) 60%, rgba(0, 0, 0, 1) 100%); /* W3C */
         filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00000000', endColorstr='#000000',GradientType=0 ); /* IE6-9 */
+        opacity: 1;
+        transition: opacity 1s;
       }
       .pieceBorderRight {
         position: absolute;
@@ -99,6 +103,8 @@
         background: -ms-linear-gradient(left, rgba(0, 0, 0, 0) 60%, rgba(0, 0, 0, 1) 100%); /* IE10+ */
         background: linear-gradient(to right, rgba(0, 0, 0, 0) 60%, rgba(0, 0, 0, 1) 100%); /* W3C */
         filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#00000000', endColorstr='#000000',GradientType=1 ); /* IE6-9 */
+        opacity: 1;
+        transition: opacity 1s;
       }
       .selectedCover {
         position: absolute;
@@ -151,62 +157,63 @@
             height: scale(height) + "px",
             width: scale(width) + "px",
           };
-          div = $("<div>").addClass("piece").css(css);
-          div.css({ "z-index": "1" });
-          img = $("<img>").attr("src", filename).css({ width: "100%", height: "100%" });
-          selectionCover = $("<div>").addClass("selectedCover").css({ width: "100%", height: "100%" }).hide();
-          img.on("dragstart", function (event) {
+          div = document.createElement("div");
+          div.classList.add("piece");
+          Object.assign(div.style, css);
+          div.style.zIndex = "1";
+          img = document.createElement("img");
+          img.src = filename;
+          img.style.width = "100%";
+          img.style.height = "100%";
+          selectionCover = document.createElement("div");
+          selectionCover.classList.add("selectedCover");
+          selectionCover.style.width = "100%";
+          selectionCover.style.height = "100%";
+          selectionCover.style.display = "none";
+          img.addEventListener("dragstart", function (event) {
             event.preventDefault();
           });
-          img.on("mousedown", function (event) {
+          img.addEventListener("mousedown", function (event) {
             if (mouseDownFunction != null) mouseDownFunction(event, theThis);
           });
-          img.on("mousemove", function (event) {
+          img.addEventListener("mousemove", function (event) {
             if (mouseMoveFunction != null) mouseMoveFunction(event, theThis);
           });
-          selectionCover.on("mousedown", function (event) {
+          selectionCover.addEventListener("mousedown", function (event) {
             if (mouseDownFunction != null) mouseDownFunction(event, theThis);
           });
 
-          div.append(img);
-          div.append(selectionCover);
-          img.load(function () {
+          div.appendChild(img);
+          div.appendChild(selectionCover);
+          img.onload = function () {
             addBorder();
             if (runWhenLoaded != null) {
               setTimeout(runWhenLoaded, 450);
             }
             loaded = true;
-          });
+          };
         }
 
         this.addSelection = function (andBulge) {
-          selectionCover.show();
+          selectionCover.style.display = "block";
           var bigger = 6;
-          div.css({ "z-index": "2" });
+          div.style.zIndex = "2";
           if (andBulge) {
-            div.css({ "z-index": "3" });
-            div.animate({
-              left: parseInt(div.css("left")) - bigger + "px",
-              top: parseInt(div.css("top")) - bigger + "px",
-              width: parseInt(div.css("width")) + 2 * bigger + "px",
-              height: parseInt(div.css("height")) + 2 * bigger + "px",
-            });
+            div.style.zIndex = "3";
+            div.style.left = parseInt(div.style.left) - bigger + "px";
+            div.style.top = parseInt(div.style.top) - bigger + "px";
+            div.style.width = parseInt(div.style.width) + 2 * bigger + "px";
+            div.style.height = parseInt(div.style.height) + 2 * bigger + "px";
           }
         };
 
         this.removeSelection = function () {
-          div.css({ "z-index": "1" });
-          selectionCover.hide();
-          div.animate(
-            {
-              left: scale(places[atIndex].left) + "px",
-              top: scale(places[atIndex].top) + "px",
-              width: scale(places[atIndex].width) + "px",
-              height: scale(places[atIndex].height) + "px",
-            },
-            200,
-            function () {}
-          );
+          div.style.zIndex = "1";
+          selectionCover.style.display = "none";
+          div.style.left = scale(places[atIndex].left) + "px";
+          div.style.top = scale(places[atIndex].top) + "px";
+          div.style.width = scale(places[atIndex].width) + "px";
+          div.style.height = scale(places[atIndex].height) + "px";
         };
 
         this.getDiv = function () {
@@ -216,24 +223,43 @@
         function addBorder() {
           var size = "4px";
           var sizepx = 4;
-          div.append($("<div>").addClass("pieceBorderTop").css({ width: "100%", height: size, top: 0, left: 0 }));
-          div.append($("<div>").addClass("pieceBorderBottom").css({ width: "100%", height: size, bottom: 0, left: 0 }));
-          div.append($("<div>").addClass("pieceBorderLeft").css({ width: size, height: "100%", top: 0, left: 0 }));
-          div.append($("<div>").addClass("pieceBorderRight").css({ width: size, height: "100%", top: 0, right: 0 }));
+          var topBorder = document.createElement("div");
+          topBorder.classList.add("pieceBorderTop");
+          topBorder.style.width = "100%";
+          topBorder.style.height = size;
+          topBorder.style.top = "0";
+          topBorder.style.left = "0";
+          div.appendChild(topBorder);
+          var bottomBorder = document.createElement("div");
+          bottomBorder.classList.add("pieceBorderBottom");
+          bottomBorder.style.width = "100%";
+          bottomBorder.style.height = size;
+          bottomBorder.style.bottom = "0";
+          bottomBorder.style.left = "0";
+          div.appendChild(bottomBorder);
+          var leftBorder = document.createElement("div");
+          leftBorder.classList.add("pieceBorderLeft");
+          leftBorder.style.width = size;
+          leftBorder.style.height = "100%";
+          leftBorder.style.top = "0";
+          leftBorder.style.left = "0";
+          div.appendChild(leftBorder);
+          var rightBorder = document.createElement("div");
+          rightBorder.classList.add("pieceBorderRight");
+          rightBorder.style.width = size;
+          rightBorder.style.height = "100%";
+          rightBorder.style.top = "0";
+          rightBorder.style.right = "0";
+          div.appendChild(rightBorder);
         }
 
         this.initialSlideTo = function (placeIndex) {
           function animate() {
-            div.animate(
-              {
-                left: scale(places[placeIndex].left) + "px",
-                top: scale(places[placeIndex].top) + "px",
-                width: scale(places[placeIndex].width) + "px",
-                height: scale(places[placeIndex].height) + "px",
-              },
-              1000,
-              "easeInOutBack"
-            );
+            div.style.transition = "all 1s ease-in-out";
+            div.style.left = scale(places[placeIndex].left) + "px";
+            div.style.top = scale(places[placeIndex].top) + "px";
+            div.style.width = scale(places[placeIndex].width) + "px";
+            div.style.height = scale(places[placeIndex].height) + "px";
             atIndex = placeIndex;
           }
 
@@ -247,22 +273,17 @@
         };
 
         this.slideTo = function (placeIndex, speed, runAfter) {
-          div.css("z-index", "4");
-          div.animate(
-            {
-              left: scale(places[placeIndex].left) + "px",
-              top: scale(places[placeIndex].top) + "px",
-              width: scale(places[placeIndex].width) + "px",
-              height: scale(places[placeIndex].height) + "px",
-            },
-            speed,
-            "easeInOutSine",
-            function () {
-              if (runAfter != null) runAfter();
-              div.css("z-index", "1");
-            }
-          );
+          div.style.zIndex = "4";
+          div.style.transition = "all " + speed / 1000 + "s ease-in-out";
+          div.style.left = scale(places[placeIndex].left) + "px";
+          div.style.top = scale(places[placeIndex].top) + "px";
+          div.style.width = scale(places[placeIndex].width) + "px";
+          div.style.height = scale(places[placeIndex].height) + "px";
           atIndex = placeIndex;
+          setTimeout(function () {
+            if (runAfter != null) runAfter();
+            div.style.zIndex = "1";
+          }, speed);
         };
 
         init();
@@ -292,6 +313,7 @@
         var pictureWidth = 3974;
         var pictureHeight = 2337;
         var pieces = [];
+        var pictureDiv = document.getElementById("picture");
 
         this.init = function () {
           var size = Math.min(pictureHeight, pictureWidth) / 4;
@@ -321,10 +343,10 @@
         }
 
         function place() {
-          $("#picture").empty();
+          while (pictureDiv.firstChild) pictureDiv.removeChild(pictureDiv.firstChild);
 
           for (var i = 0; i < pieces.length; i++) {
-            $("#picture").append(pieces[i].getDiv());
+            pictureDiv.appendChild(pieces[i].getDiv());
           }
           var randomSpots = makeRandomArray(pieces.length);
           for (var i = 0; i < pieces.length; i++) {
@@ -338,7 +360,7 @@
             });
           }
 
-          $("#picture").on("mouseup", function () {
+          pictureDiv.addEventListener("mouseup", function () {
             if (dragging) doneDragging();
             dragging = false;
           });
@@ -448,12 +470,20 @@
 				}
 			}
 			*/
-            var borders = $(".pieceBorderTop, .pieceBorderBottom, .pieceBorderLeft, .pieceBorderRight");
-            borders.hide();
+            var borders = document.querySelectorAll(
+              ".pieceBorderTop, .pieceBorderBottom, .pieceBorderLeft, .pieceBorderRight"
+            );
+            Array.from(borders).forEach(function (b) {
+              b.style.display = "none";
+            });
             setTimeout(function () {
-              borders.show();
+              Array.from(borders).forEach(function (b) {
+                b.style.display = "block";
+              });
               setTimeout(function () {
-                borders.fadeOut(1000);
+                Array.from(borders).forEach(function (b) {
+                  b.style.opacity = "0";
+                });
               }, 500);
             }, 500);
           }
@@ -465,7 +495,7 @@
         picture.init();
       }
 
-      $(function () {
+      window.addEventListener("DOMContentLoaded", function () {
         var game = new Game();
       });
     </script>
